@@ -28,7 +28,9 @@ public class AccountI implements Bank.Account {
     }
 
     @Override
-    public Map<Currency, Float> getCredit(float amount, Current current) {
+    public Map<Currency, Float> getCredit(float amount, Current current) throws Bank.accountIsNotPremium {
+        if(income < BankServiceI.premiumMinIncome)
+            throw new Bank.accountIsNotPremium();
         Map<Currency, Float> res = new HashMap<>();
         float baseCost = 0.3f * amount * (1.0f - 10000 / income); // koszt to 30% kwoty pozyczki pomniejszony o procent jaki stanowi income osoby w stosunku do 10000
         for(Map.Entry<Currency, Float> rate: exchangeClient.getRates().entrySet())

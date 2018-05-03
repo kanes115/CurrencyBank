@@ -8,12 +8,14 @@ import java.util.List;
 public class BankServer {
 
     private final String host = "localhost";
-    private final int port = 50051;
+    private final int exchangerPort = 50051;
     private ExchangeClient exchangeClient;
+    private final int port;
 
-    public BankServer(String[] args){
+    public BankServer(int port){
+        this.port = port;
         startExchangeClient();
-        startBankService(args);
+        startBankService();
     }
 
     private void startExchangeClient() {
@@ -21,14 +23,14 @@ public class BankServer {
             currencies.add(Currency.EUR);
             currencies.add(Currency.GBP);
             currencies.add(Currency.PLN);
-            exchangeClient = new ExchangeClient(host, port, currencies);
+            exchangeClient = new ExchangeClient(host, exchangerPort, currencies);
             exchangeClient.startUpdaters();
             //client.waitForUpdaters();
     }
 
-    private void startBankService(String[] args){
-        try(com.zeroc.Ice.Communicator communicator = com.zeroc.Ice.Util.initialize(args)) {
-            com.zeroc.Ice.ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("BankAdapter", "default -p 10000");
+    private void startBankService(){
+        try(com.zeroc.Ice.Communicator communicator = com.zeroc.Ice.Util.initialize()) {
+            com.zeroc.Ice.ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("BankAdapter", "default -p " + String.valueOf(port));
             com.zeroc.Ice.Object object = new BankServiceI(exchangeClient);
             adapter.add(object, com.zeroc.Ice.Util.stringToIdentity("SimplePrinter"));
             adapter.activate();
@@ -41,7 +43,7 @@ public class BankServer {
 
     public static void main(String[] args){
 
-        BankServer bank = new BankServer(args);
+        BankServer bank = new BankServer(10000);
     }
 
 }
