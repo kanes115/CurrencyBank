@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.bank.currencyRates";
+option objc_class_prefix = "HLWS";
+
+package exchange;
+
+enum Currency {
+    PLN = 0;
+    EUR = 1;
+    USD = 2;
+    GBP = 3;
+}
+
+service Exchanger {
+    rpc GetRates (CurrencyRequest) returns (stream CurrencyRate) {}
+}
+
+message CurrencyRequest {
+    Currency currency = 1;
+}
+
+message CurrencyRate {
+    Currency currency = 1;
+    float value = 2;
+}

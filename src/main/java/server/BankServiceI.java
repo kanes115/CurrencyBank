@@ -6,7 +6,11 @@ import com.zeroc.Ice.Identity;
 
 public class BankServiceI implements Bank.BankService {
 
-    private Identity identity2;
+    private ExchangeClient exchangeClient;
+
+    public BankServiceI(ExchangeClient exchangeClient){
+        this.exchangeClient = exchangeClient;
+    }
 
     @Override
     public long createAccount(String firstName, String lastName, long pesel, float income, Current current) {
@@ -16,8 +20,7 @@ public class BankServiceI implements Bank.BankService {
         else
             accountType = "standard";
         Identity identity = new Identity(String.valueOf(pesel), accountType);
-        identity2 = identity;
-        AccountPrx.uncheckedCast(current.adapter.add(new AccountI(firstName, lastName, pesel, income), identity));
+        AccountPrx.uncheckedCast(current.adapter.add(new AccountI(firstName, lastName, pesel, income, exchangeClient), identity));
         return createUid(pesel, accountType);
     }
 

@@ -12,12 +12,14 @@ public class AccountI implements Bank.Account {
     private final String lastname;
     private final long pesel;
     private final float income;
+    private ExchangeClient exchangeClient;
 
-    public AccountI(String firstname, String lastname, long pesel, float income) {
+    public AccountI(String firstname, String lastname, long pesel, float income, ExchangeClient exchangeClient) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.pesel = pesel;
         this.income = income;
+        this.exchangeClient = exchangeClient;
     }
 
     @Override
