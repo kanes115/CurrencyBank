@@ -26,6 +26,8 @@ public class RandomVariator implements Runnable {
                 e.printStackTrace();
             }
             for(int i = 0; i < rates.size(); i++){
+                if(rates.get(i).getCurrency().equals(Currency.PLN))
+                    continue;
                 if(generator.nextDouble() < 0.3) {
                     rates.set(i, builder
                             .setCurrency(rates.get(i).getCurrency())
@@ -51,6 +53,7 @@ public class RandomVariator implements Runnable {
         res.add(createRate(Currency.EUR, 4.1f));
         res.add(createRate(Currency.GBP, 5.2f));
         res.add(createRate(Currency.USD, 3.5f));
+        res.add(createRate(Currency.PLN, 1.0f));
         return res;
     }
 

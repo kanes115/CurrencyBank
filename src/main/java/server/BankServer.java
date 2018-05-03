@@ -20,6 +20,7 @@ public class BankServer {
             List<Currency> currencies = new LinkedList<>();
             currencies.add(Currency.EUR);
             currencies.add(Currency.GBP);
+            currencies.add(Currency.PLN);
             exchangeClient = new ExchangeClient(host, port, currencies);
             exchangeClient.startUpdaters();
             //client.waitForUpdaters();

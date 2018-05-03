@@ -7,6 +7,7 @@ import io.grpc.bank.currencyRates.CurrencyRate;
 import io.grpc.bank.currencyRates.CurrencyRequest;
 import io.grpc.bank.currencyRates.ExchangerGrpc;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,23 @@ public class ExchangeClient {
     private final List<Currency> currenciesToSubscribe;
     private List<Thread> threads;
 
-    public Map<Currency, Float> getRates(){
-        return rates;
+    public Map<Bank.Currency, Float> getRates(){
+        return convertToBankCurrency(rates);
+    }
+
+    private Map<Bank.Currency, Float> convertToBankCurrency(Map<Currency, Float> in){
+        Map<Bank.Currency, Float> out = new HashMap<>();
+        for(Map.Entry<Currency, Float> rate: in.entrySet()){
+            if(rate.getKey().equals(Currency.EUR))
+                out.put(Bank.Currency.EUR, rate.getValue());
+            if(rate.getKey().equals(Currency.GBP))
+                out.put(Bank.Currency.GBP, rate.getValue());
+            if(rate.getKey().equals(Currency.USD))
+                out.put(Bank.Currency.USD, rate.getValue());
+            if(rate.getKey().equals(Currency.PLN))
+                out.put(Bank.Currency.PLN, rate.getValue());
+        }
+        return out;
     }
 
     public ExchangeClient(String host, int port, List<Currency> currenciesToSubscribe) {
