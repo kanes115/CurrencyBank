@@ -1,10 +1,14 @@
 module Bank
 {
 
+    enum Currency{ EUR, USD, GBP, PLN };
+
+    dictionary<Currency, float> credits;
+
     interface Account
     {
         float getBalance();
-        float getCredit();
+        credits getCredit(float amount);
     }
 
     interface BankService

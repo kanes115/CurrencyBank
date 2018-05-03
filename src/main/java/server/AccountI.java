@@ -1,6 +1,10 @@
 package server;
 
+import Bank.Currency;
 import com.zeroc.Ice.Current;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AccountI implements Bank.Account {
 
@@ -22,7 +26,9 @@ public class AccountI implements Bank.Account {
     }
 
     @Override
-    public float getCredit(Current current) {
-        return 3932;
+    public Map<Currency, Float> getCredit(float amount, Current current) {
+        Map<Currency, Float> map = new HashMap<>();
+        map.put(Currency.EUR, 56f);
+        return map;
     }
 }

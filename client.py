@@ -37,6 +37,11 @@ with Ice.initialize(sys.argv) as communicator:
         elif command.startswith('login'):
             [_login, new_lastname] = command.split()
             lastname = new_lastname
+        elif command.startswith('getCredit'):
+            [_getCredit, amount] = command.split()
+            account = bank.getAccount(accounts[lastname])
+            print(account.getCredit(float(amount)))
+
 
 
 
