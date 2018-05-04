@@ -6,24 +6,22 @@ import io.grpc.bank.currencyRates.Currency;
 import io.grpc.bank.currencyRates.CurrencyRate;
 import io.grpc.bank.currencyRates.CurrencyRequest;
 import io.grpc.bank.currencyRates.ExchangerGrpc;
+import io.grpc.stub.StreamObserver;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class ExchangeClient {
     private static final Logger logger = Logger.getLogger(ExchangeClient.class.getName());
 
     private final ManagedChannel channel;
-    private final ExchangerGrpc.ExchangerBlockingStub calcBlockingStub;
+    private final ExchangerGrpc.ExchangerStub stub;
     private final Map<Currency, Float> rates = new ConcurrentHashMap<>();
     private final List<Currency> currenciesToSubscribe;
-    private List<Thread> threads;
 
     public Map<Bank.Currency, Float> getRates(){
         return convertToBankCurrency(rates);
@@ -50,7 +48,7 @@ public class ExchangeClient {
                 .usePlaintext(true)
                 .build();
 
-        calcBlockingStub = ExchangerGrpc.newBlockingStub(channel);
+        stub = ExchangerGrpc.newStub(channel);
     }
 
     public void shutdown() throws InterruptedException {
@@ -58,53 +56,30 @@ public class ExchangeClient {
     }
 
     public void startUpdaters(){
-        threads = this.currenciesToSubscribe.stream().map(currency -> {
+        this.currenciesToSubscribe.forEach(currency -> {
             System.out.println("Starting updater for currency: " + currency);
             CurrencyRequest request = CurrencyRequest.newBuilder().setCurrency(currency).build();
-            Iterator<CurrencyRate> result = calcBlockingStub.getRates(request);
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        if (result.hasNext()) {
-                            CurrencyRate newRate = result.next();
-                            updateCurrency(currency, newRate.getValue());
-                            System.out.println(currency + " " + newRate.getValue());
-                        } else {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            });
-            t.start();
-            return t;
-        }).collect(Collectors.toList());
+            stub.getRates(request, new RatesObserver());
+        });
     }
 
-    public void waitForUpdaters(){
-        try {
-            threads.forEach(t -> {
-                try {
-                    t.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-        }finally {
-            try {
-                shutdown();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+    private class RatesObserver implements StreamObserver<CurrencyRate> {
+
+        @Override
+        public void onNext(CurrencyRate value) {
+            System.out.println("" + value.getCurrency() + value.getValue());
+            rates.put(value.getCurrency(), value.getValue());
         }
-    }
 
-    private synchronized void updateCurrency(Currency currency, float newValue){
-        rates.put(currency, newValue);
+        @Override
+        public void onError(Throwable t) {
+            System.err.println("Problem with currency service");
+        }
+
+        @Override
+        public void onCompleted() {
+            // never happens actually
+        }
     }
 
 }
